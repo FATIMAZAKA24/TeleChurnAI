@@ -1,7 +1,4 @@
 # TeleChurnAI
-Proactive Churn Prediction with SHAP Explainability and Customer Segmentation
-
-# TeleChurnAI
 
 **An Explainable AI-Driven Customer Churn Prediction System for the Telecom Sector**
 
