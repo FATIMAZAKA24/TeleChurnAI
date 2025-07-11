@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SHAP Explanation</title>
+  <link rel="icon" href="Asset2.png" type="image/png">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #2c003e, #4b0082, #8a2be2);
+      background-image: url('background.png');
+      background-attachment: fixed;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+      .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background-color: #4b0082;
+        color: white;
+        position: fixed;
+        width: 98%;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+        flex-wrap: wrap;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+      }
+
+      .logo-img {
+        height: 40px;
+        margin-right: 10px;
+      }
+
+      .logo-text {
+        font-size: 1.2rem;
+        color: white;
+      }
+
+      .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .nav-links a {
+        color: white;
+        text-decoration: none;
+        margin: 0 15px;
+        font-size: 18px;
+        transition: 0.3s;
+      }
+
+      .nav-links a:hover {
+        color: #ffccff;
+      }
+    h1 {
+      color:rgb(3, 3, 3);
+      margin-top: 100px;
+      text-align: center;
+      font-size: 3rem;
+    }
+
+    .control-panel {
+      background: linear-gradient(135deg,rgb(181, 147, 235),rgb(233, 163, 210));
+      padding: 30px 40px; 
+      border-radius: 15px; 
+      box-shadow: 0 8px 20px rgba(123, 47, 247, 0.4); 
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 40%;
+      min-width: 500px;
+      margin-bottom: 30px;
+      margin-top:100px;
+      color: black;
+      font-weight: 600;
+      font-size: 2rem;
+      line-height: 1.8;
+    }
+
+    .control-panel h2 {
+      margin-bottom: 25px;
+      font-size: 2.2rem;
+      text-align: center;
+      color: black; 
+      text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4); 
+    }
+
+    .selection-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 25px; /* more space between items */
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-size: 1.7rem;
+      font-weight: 600;
+      margin-right: 10px;
+      align-self: center;
+      min-width: 90px;
+      color: black; /* labels white to match dark background */
+    }
+
+    select {
+      padding: 10px 18px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 1.5rem;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      min-width: 180px;
+      transition: box-shadow 0.3s ease;
+    }
+
+    select:hover,
+    select:focus {
+      box-shadow: 0 0 12px 3px rgba(167, 20, 167, 0.7); 
+    }
+
+    button {
+      padding: 20px 30px;
+      font-size: 1.5rem;
+      background-color: #4b0082;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin-top: 20px; 
+    }
+
+    button:hover {
+      background-color: #6a0dad;
+    }
+
+    label {
+      font-size: 1.7rem;
+      font-weight: 600;
+    }
+
+    #plotContainer {
+      display: none;
+      background: linear-gradient(150deg,rgb(181, 147, 235),rgb(233, 163, 210));
+  
+      min-height: 300px;    
+      padding: 20px;                 
+      border-radius: 12px;          
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+      min-width: 500px;             
+      width: 50%;
+      margin-top: 20px;       
+      text-align: center;       
+    }
+
+    #plotContainer h2{
+      margin-bottom: 25px;
+      font-size: 2.2rem;
+      text-align: center;
+      color: black; 
+      text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4); 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    }
+
+    #shapImage {
+      display: block;
+      margin: 10px auto;               
+      max-width: 100%;
+      border-radius: 10px;
+      border: 1px solid black;
+    }
+
+    #explanation {
+      margin-top: 15px;
+      font-size: 1.4rem;
+      font-weight: 450;
+      color: black; 
+      text-align: justify;  
+      padding: 12px;
+      white-space: pre-wrap;
+    }
+
+    #strategy {
+      margin-top: 20px;
+      font-size: 1.5rem;
+      text-align: justify;  
+      color: #111;
+      font-weight: 450;
+      padding: 12px;
+      border-radius: 8px;
+      border: 3px solid #4b0082;
+      white-space: pre-wrap;
+    }
+
+    #downloadBtn {
+      display: block;
+      margin: 20px auto 0 auto;
+      font-size: 1.5rem;
+      padding: 12px 24px;
+      background-color: #4b0082;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    #downloadBtn:hover {
+      background-color: #6a0dad;
+    }
+
+    @media (max-width: 600px) {
+      .selection-row {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      label {
+        margin-bottom: 8px;
+        min-width: auto;
+      }
+
+      select {
+        min-width: 100%;
+      }
+    }
+  </style>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sessionId = urlParams.get("session_id");
+
+      const downloadBtn = document.getElementById('downloadBtn');
+      const shapImage = document.getElementById('shapImage');
+
+      downloadBtn.addEventListener('click', () => {
+        if (!shapImage.src) return;
+
+        const link = document.createElement('a');
+        link.href = shapImage.src;
+        const cluster = document.getElementById('clusterSelect').value;
+        const plotType = document.getElementById('plotTypeSelect').value;
+        link.download = `shap_plot_${cluster}_${plotType}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+
+      window.fetchExplanation = function () {
+        const cluster = document.getElementById("clusterSelect").value;
+        const plotType = document.getElementById("plotTypeSelect").value;
+
+        fetch(`http://localhost:8000/api/get-shap-explanation/?session_id=${sessionId}&cluster=${cluster}&plot_type=${plotType}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.plot_base64) {
+              shapImage.src = "data:image/png;base64," + data.plot_base64;
+              shapImage.style.display = 'block';
+              document.getElementById("explanation").textContent = data.explanation;
+              document.getElementById("strategy").textContent = data.strategy || "No strategy available.";
+              document.getElementById("plotContainer").style.display = 'block';
+              downloadBtn.style.display = 'inline-block';
+            } else {
+              shapImage.style.display = 'none';
+              document.getElementById("explanation").textContent = data.error || "No explanation available.";
+              document.getElementById("strategy").textContent = "";
+              document.getElementById("plotContainer").style.display = 'block';
+              downloadBtn.style.display = 'none';
+            }
+          })
+          .catch(error => {
+            console.error("Error:", error);
+            shapImage.style.display = 'none';
+            document.getElementById("explanation").textContent = "Failed to fetch SHAP explanation.";
+            document.getElementById("strategy").textContent = "";
+            downloadBtn.style.display = 'none';
+          });
+      }
+    });
+  </script>
+</head>
+
+<body>
+
+  <div class="navbar">
+    <div class="logo">
+      <img src="Asset4.png" alt="Logo" class="logo-img" />
+      <span class="logo-text"><strong>TeleChurnAI</strong></span>
+    </div>
+    <div class="nav-links">
+      <a href="Home.html">Home</a>
+      <a href="single_predict.html">Single Prediction</a>
+      <a href="dataset_predict.html">Batch Prediction</a>
+      <a href="shiny_dashboard.html">Dashboard</a>
+    </div>
+  </div>
+
+  <div class="control-panel">
+    <h2>Select Cluster and Plot Type</h2>
+    <div class="selection-row">
+      <label for="clusterSelect">Cluster:</label>
+      <select id="clusterSelect">
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="medhigh">Medium-High</option>
+        <option value="high">High</option>
+      </select>
+
+      <label for="plotTypeSelect">Plot Type:</label>
+      <select id="plotTypeSelect">
+        <option value="beeswarm">Beeswarm</option>
+        <option value="bar">Bar</option>
+        <option value="heatmap">Heatmap</option>
+      </select>
+    </div>
+  </div>
+    <button onclick="fetchExplanation()">Load Explanation</button>
+  </div>
+  <div id="plotContainer">
+    <h2 style="color:white; margin-bottom: 10px; font-weight: 700;">Summary Plot</h2>
+    <img id="shapImage" src="" alt="SHAP Plot">
+
+    <h2 style="color:white; margin-top: 25px; margin-bottom: 10px; font-weight: 700;">Key Explanation</h2>
+    <div id="explanation"></div>
+
+    <h2 style="color:white; margin-top: 25px; margin-bottom: 10px; font-weight: 700;">Recommended Retention Strategies</h2>
+    <div id="strategy"></div>
+
+    <button id="downloadBtn">Download Graph</button>
+  </div>
+
+</body>
+</html>

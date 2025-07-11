@@ -1,1 +1,10 @@
-
+catboost
+shap
+django
+djangorestframework
+pandas
+scikit-learn
+numpy
+matplotlib
+plotly
+joblib

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Upload CSV for Churn Prediction</title>
+  <link rel="icon" href="Asset2.png" type="image/png">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #2c003e, #4b0082, #8a2be2);
+      background-image: url('background.png');
+      background-attachment: fixed;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: linear-gradient(250deg,rgb(181, 147, 235),rgb(233, 163, 210)); 
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+      width: 80%;
+      max-width: 700px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: black;
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      margin: 15px 0;
+      font-size:1.2rem;
+      padding: 8px;
+      border: 1px solid black;
+      border-radius: 5px;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    button {
+      background-color: rgb(117, 24, 204);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    button:hover {
+      background-color: rgb(90, 24, 170);
+    }
+
+    #predictionResult {
+      text-align: left;
+      font-size: 1rem;
+      color: #333;
+      display: none;
+    }
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background-color: #4b0082;
+      color: white;
+      position: fixed;
+      width: 98%;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+      flex-wrap: wrap;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo-img {
+      height: 40px;
+      margin-right: 10px;
+    }
+
+    .logo-text {
+      font-size: 1.2rem;
+      color: white;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      margin: 0 15px;
+      font-size: 18px;
+      transition: 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: #ffccff;
+    }
+
+    .loading-dots {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100px;
+    }
+
+    .loading-dots span {
+      width: 10px;
+      height: 10px;
+      margin: 0 5px;
+      background-color: rgb(117, 24, 204);
+      border-radius: 50%;
+      display: inline-block;
+      animation: blink 1.4s infinite ease-in-out both;
+    }
+
+    .loading-dots span:nth-child(1) {
+      animation-delay: -0.32s;
+    }
+
+    .loading-dots span:nth-child(2) {
+      animation-delay: -0.16s;
+    }
+
+    .loading-dots span:nth-child(3) {
+      animation-delay: 0;
+    }
+
+    @keyframes blink {
+      0%, 80%, 100% {
+        opacity: 0;
+      }
+      40% {
+        opacity: 1;
+      }
+    }
+
+    .scroll-buttons {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      z-index: 1000;
+    }
+
+    .scroll-btn {
+      background-color: rgb(117, 24, 204);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 50%;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.3);
+      transition: background-color 0.3s;
+    }
+
+    .scroll-btn:hover {
+      background-color: rgb(90, 24, 170);
+    }
+
+  #goToExplanation {
+    display: none; /* HIDDEN INITIALLY */
+    margin-top: 30px;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 2px dashed #5d1d99;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  #goToExplanation a {
+    color: #5d1d99;
+    font-weight: bold;
+    text-decoration: underline;
+  }
+
+  #goToExplanation a:hover {
+    color: #3a1369;
+  }
+
+  .scroll-btn.down {
+    transform: rotate(180deg);
+  }
+  </style>
+
+  <script>
+    function uploadCSV(event) {
+      event.preventDefault();
+
+      const formData = new FormData();
+      const fileInput = document.getElementById("csvFile");
+      const predictionDiv = document.getElementById("predictionResult");
+      const loadingIndicator = document.getElementById("loadingIndicator");
+      const explanationDiv = document.getElementById("goToExplanation");
+
+      if (!fileInput.files.length) {
+        alert("Please select a file before submitting.");
+        return;
+      }
+
+      predictionDiv.style.display = "none";
+      explanationDiv.style.display = "none";
+      loadingIndicator.style.display = "flex";
+
+      formData.append("file", fileInput.files[0]);
+
+      fetch("http://localhost:8000/api/batch-predict/", {
+        method: "POST",
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        loadingIndicator.style.display = "none";
+        if (data.predictions) {
+          let predictionsHTML = "<h2>Predictions:</h2><ul>";
+          data.predictions.predictions.forEach((pred, index) => {
+            predictionsHTML += `<li>Customer ${index + 1}: ${pred}, Probability: ${data.predictions.probabilities[index]}</li>`;
+          });
+          predictionsHTML += "</ul>";
+          predictionDiv.innerHTML = predictionsHTML;
+          predictionDiv.style.display = "block";
+          const sessionId = data.session_id;
+          explanationDiv.innerHTML = `
+            <p>💡 Curious why these predictions were made?<br>
+            <a href="shap_explanation.html?session_id=${sessionId}" target="_blank">Click here for detailed SHAP explanations & visuals →</a>
+            </p>
+          `;
+          explanationDiv.style.display = "block";
+        } else {
+          predictionDiv.innerHTML = `<p class="error">${data.error || "Unexpected error"}</p>`;
+          predictionDiv.style.display = "block";
+          explanationDiv.style.display = "none";
+        }
+      })
+      .catch(error => {
+        loadingIndicator.style.display = "none";
+        console.error("Error:", error);
+        predictionDiv.innerHTML = `<p class="error">${error.message}</p>`;
+        predictionDiv.style.display = "block";
+        explanationDiv.style.display = "none";
+      });
+    }
+
+    function scrollToSection(id) {
+      const section = document.getElementById(id);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  </script>
+
+</head>
+
+<body>
+  <div class="navbar">
+    <div class="logo">
+      <img src="Asset4.png" alt="Logo" class="logo-img" />
+      <span class="logo-text"><strong>TeleChurnAI</strong></span>
+    </div>
+    <div class="nav-links">
+      <a href="Home.html">Home</a>
+      <a href="single_predict.html">Single Prediction</a>
+      <a href="dataset_predict.html">Batch Prediction</a>
+      <a href="shiny_dashboard.html">Dashboard</a>
+    </div>
+  </div>
+
+  <div class="container" id="uploadSection" style="margin-top: 100px;">
+    <h1>Upload CSV for Churn Prediction</h1>
+    <form onsubmit="uploadCSV(event)">
+      <input type="file" id="csvFile" accept=".csv" required><br><br>
+      <button type="submit">Upload & Predict</button>
+      <div id="loadingIndicator" class="loading-dots" style="display:none; flex-direction: column;">
+        <div style="display: flex;">
+          <span></span><span></span><span></span>
+        </div>
+        <p style="margin-top: 10px; font-size: 1rem; color: #5d1d99;">Please wait, your predictions are loading...</p>
+      </div>
+    </form>
+  </div>
+
+  <div id="predictionResult" class="container"></div>
+
+  <!-- SHAP explanation box appears ONLY after prediction -->
+  <div id="goToExplanation" class="container">
+    <p>💡 Curious why these predictions were made?<br>
+      <a href="shap_explanation.html" target="_blank">Click here for detailed SHAP explanations & visuals →</a>
+    </p>
+  </div>
+
+  <!-- Scroll Buttons -->
+  <div class="scroll-buttons">
+    <button onclick="scrollToSection('uploadSection')" class="scroll-btn up">↑</button>
+    <button onclick="scrollToSection('goToExplanation')" class="scroll-btn down">↑</button>
+  </div>
+</body>
+</html>
